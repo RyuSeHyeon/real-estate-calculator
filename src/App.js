@@ -32,80 +32,80 @@ const EnhancedRealEstateCalculator = () => {
     return new Intl.NumberFormat('ko-KR').format(num);
   };
 
-  // 문자열 수식 계산 함수 개선
-  const evaluateExpression = (expr) => {
-      try {
-          // 콤마 제거 및 공백 제거
-          const cleanExpr = expr.replace(/,/g, '').replace(/\s/g, '');
-          // 기본적인 유효성 검사
-          if (!/^[0-9+\-*/().]+$/.test(cleanExpr)) {
-              return NaN;
-          }
-          // eval 대신 Function 사용하여 보안 강화
-          const result = new Function(`return ${cleanExpr}`)();
-          return isFinite(result) ? result : NaN;
-      } catch (error) {
-          return NaN;
-      }
-  };
+    // 문자열 수식 계산 함수 개선
+    const evaluateExpression = (expr) => {
+        try {
+            // 콤마 제거 및 공백 제거
+            const cleanExpr = expr.replace(/,/g, '').replace(/\s/g, '');
+            // 기본적인 유효성 검사
+            if (!/^[0-9+\-*/().]+$/.test(cleanExpr)) {
+                return NaN;
+            }
+            // eval 대신 Function 사용하여 보안 강화
+            const result = new Function(`return ${cleanExpr}`)();
+            return isFinite(result) ? result : NaN;
+        } catch (error) {
+            return NaN;
+        }
+    };
 
-  // 입력값 처리 함수 수정
-  const handleInputChange = (name, value) => {
-      setDisplayValues(prev => ({
-          ...prev,
-          [name]: value,
-      }));
+    // 입력값 처리 함수 수정
+    const handleInputChange = (name, value) => {
+        setDisplayValues(prev => ({
+            ...prev,
+            [name]: value,
+        }));
 
-      // 수식이 포함된 경우 실시간 계산 시도
-      if (value.match(/[+\-*/]/)) {
-          try {
-              const result = evaluateExpression(value);
-              if (!isNaN(result)) {
-                  const formattedResult = formatNumber(result);
-                  setValues(prev => ({
-                      ...prev,
-                      [name]: result,
-                  }));
-              }
-          } catch (error) {
-              // 계산 실패 시 무시
-          }
-      } else {
-          // 숫자만 있는 경우 콤마 처리
-          const numericValue = value.replace(/,/g, '');
-          if (!isNaN(numericValue) && numericValue !== '') {
-              setDisplayValues(prev => ({
-                  ...prev,
-                  [name]: formatNumber(numericValue),
-              }));
-              setValues(prev => ({
-                  ...prev,
-                  [name]: Number(numericValue),
-              }));
-          }
-      }
-  };
+        // 수식이 포함된 경우 실시간 계산 시도
+        if (value.match(/[+\-*/]/)) {
+            try {
+                const result = evaluateExpression(value);
+                if (!isNaN(result)) {
+                    const formattedResult = formatNumber(result);
+                    setValues(prev => ({
+                        ...prev,
+                        [name]: result,
+                    }));
+                }
+            } catch (error) {
+                // 계산 실패 시 무시
+            }
+        } else {
+            // 숫자만 있는 경우 콤마 처리
+            const numericValue = value.replace(/,/g, '');
+            if (!isNaN(numericValue) && numericValue !== '') {
+                setDisplayValues(prev => ({
+                    ...prev,
+                    [name]: formatNumber(numericValue),
+                }));
+                setValues(prev => ({
+                    ...prev,
+                    [name]: Number(numericValue),
+                }));
+            }
+        }
+    };
 
-  // 키 입력 처리 함수 수정
-  const handleKeyDown = (e, name) => {
-      if (e.key === 'Enter' || e.key === '=') {
-          e.preventDefault();
-          const result = evaluateExpression(e.target.value);
-          if (!isNaN(result)) {
-              const newValue = Math.round(result);
-              setValues(prev => ({
-                  ...prev,
-                  [name]: newValue,
-              }));
-              setDisplayValues(prev => ({
-                  ...prev,
-                  [name]: formatNumber(newValue),
-              }));
-              // 모바일에서 키보드 닫기
-              e.target.blur();
-          }
-      }
-  };
+    // 키 입력 처리 함수 수정
+    const handleKeyDown = (e, name) => {
+        if (e.key === 'Enter' || e.key === '=') {
+            e.preventDefault();
+            const result = evaluateExpression(e.target.value);
+            if (!isNaN(result)) {
+                const newValue = Math.round(result);
+                setValues(prev => ({
+                    ...prev,
+                    [name]: newValue,
+                }));
+                setDisplayValues(prev => ({
+                    ...prev,
+                    [name]: formatNumber(newValue),
+                }));
+                // 모바일에서 키보드 닫기
+                e.target.blur();
+            }
+        }
+    };
 
 
   // 결과 계산
@@ -196,11 +196,11 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-            inputMode="decimal"
-            value={displayValues.currentProperty}
-            onChange={(e) => handleInputChange('currentProperty', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, 'currentProperty')}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                      inputMode="decimal"
+            value={displayValues.bankLoan}
+            onChange={(e) => handleInputChange('bankLoan', e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, 'bankLoan')}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
@@ -211,11 +211,11 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-            inputMode="decimal"
-            value={displayValues.currentProperty}
-            onChange={(e) => handleInputChange('currentProperty', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, 'currentProperty')}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                      inputMode="decimal"
+            value={displayValues.savings}
+            onChange={(e) => handleInputChange('savings', e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, 'savings')}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
@@ -226,11 +226,11 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-            inputMode="decimal"
-            value={displayValues.currentProperty}
-            onChange={(e) => handleInputChange('currentProperty', e.target.value)}
-            onKeyDown={(e) => handleKeyDown(e, 'currentProperty')}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                      inputMode="decimal"
+            value={displayValues.newProperty}
+            onChange={(e) => handleInputChange('newProperty', e.target.value)}
+            onKeyDown={(e) => handleKeyDown(e, 'newProperty')}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
