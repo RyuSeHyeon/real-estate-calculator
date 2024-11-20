@@ -196,11 +196,10 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-                      inputMode="decimal"
             value={displayValues.bankLoan}
             onChange={(e) => handleInputChange('bankLoan', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'bankLoan')}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
@@ -211,11 +210,10 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-                      inputMode="decimal"
             value={displayValues.savings}
             onChange={(e) => handleInputChange('savings', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'savings')}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
@@ -226,11 +224,10 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-                      inputMode="decimal"
             value={displayValues.newProperty}
             onChange={(e) => handleInputChange('newProperty', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'newProperty')}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
