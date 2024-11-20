@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- 지붕 -->
+  <path 
+    d="M256 80L76 220H436L256 80Z" 
+    fill="#000000" 
+    stroke="#FFFFFF"
+    stroke-width="2"
+  />
+  
+  <!-- 집 본체 -->
+  <path 
+    d="M96 220V440H416V220" 
+    fill="#000000" 
+    stroke="#FFFFFF" 
+    stroke-width="24" 
+    stroke-linejoin="round"
+  />
+  
+  <!-- 계산기 화면 -->
+  <rect 
+    x="156" 
+    y="240" 
+    width="200" 
+    height="40" 
+    rx="8" 
+    fill="#FFFFFF"
+  />
+  
+  <!-- 계산기 버튼들 (3x3 그리드) -->
+  <g fill="#FFFFFF">
+    <!-- 첫째 줄 -->
+    <rect x="156" y="300" width="50" height="40" rx="8"/>
+    <rect x="231" y="300" width="50" height="40" rx="8"/>
+    <rect x="306" y="300" width="50" height="40" rx="8"/>
+    
+    <!-- 둘째 줄 -->
+    <rect x="156" y="350" width="50" height="40" rx="8"/>
+    <rect x="231" y="350" width="50" height="40" rx="8"/>
+    <rect x="306" y="350" width="50" height="40" rx="8"/>
+    
+    <!-- 셋째 줄 -->
+    <rect x="156" y="400" width="50" height="40" rx="8"/>
+    <rect x="231" y="400" width="50" height="40" rx="8"/>
+    <rect x="306" y="400" width="50" height="40" rx="8"/>
+  </g>
+</svg>
