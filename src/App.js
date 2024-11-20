@@ -181,11 +181,11 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
-            inputMode="decimal"
+            inputMode="text"  // 일반 키보드로 변경하여 사칙연산 기호 입력 가능
             value={displayValues.currentProperty}
             onChange={(e) => handleInputChange('currentProperty', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'currentProperty')}
-            className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+            className="w-full p-2 border rounded focus:ring-2 focus:ring-blue-500"
             placeholder="금액 입력 (사칙연산 가능)"
           />
         </div>
@@ -196,6 +196,7 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
+            inputMode="text"  // 일반 키보드로 변경하여 사칙연산 기호 입력 가능
             value={displayValues.bankLoan}
             onChange={(e) => handleInputChange('bankLoan', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'bankLoan')}
@@ -210,6 +211,7 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
+            inputMode="text"  // 일반 키보드로 변경하여 사칙연산 기호 입력 가능
             value={displayValues.savings}
             onChange={(e) => handleInputChange('savings', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'savings')}
@@ -224,6 +226,7 @@ const EnhancedRealEstateCalculator = () => {
           </label>
           <input
             type="text"
+            inputMode="text"  // 일반 키보드로 변경하여 사칙연산 기호 입력 가능
             value={displayValues.newProperty}
             onChange={(e) => handleInputChange('newProperty', e.target.value)}
             onKeyDown={(e) => handleKeyDown(e, 'newProperty')}
