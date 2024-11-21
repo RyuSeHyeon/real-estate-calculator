@@ -65,6 +65,9 @@ const EnhancedRealEstateCalculator = () => {
     const [transactionType, setTransactionType] = useState('sale');
     const [region, setRegion] = useState('normal');
     const [isFirstTime, setIsFirstTime] = useState(false);
+    // 상태 추가 (컴포넌트 최상단 상태 선언부에 추가)
+    const [isResultVisible, setIsResultVisible] = useState(true);
+
 
     // 중개수수료 요율 계산 함수
     const calculateBrokerageRate = (amount, type) => {
@@ -165,14 +168,42 @@ const EnhancedRealEstateCalculator = () => {
         return formula;
     };
 
-    // 문자열 수식 계산
+    // 문자열 수식 계산 (안전한 버전)
     const evaluateExpression = (expr) => {
         try {
             const cleanExpr = expr.replace(/,/g, '').replace(/\s/g, '');
             if (!/^[0-9+\-*/().]+$/.test(cleanExpr)) {
                 return NaN;
             }
-            const result = new Function(`return ${cleanExpr}`)();
+
+            // 간단한 사칙연산만 직접 처리
+            const tokens = cleanExpr.match(/[0-9.]+|[+\-*/()]/g) || [];
+            const numbers = [];
+            const operators = [];
+
+            for (const token of tokens) {
+                if (/[0-9.]+/.test(token)) {
+                    numbers.push(parseFloat(token));
+                } else {
+                    operators.push(token);
+                }
+            }
+
+            if (numbers.length === 0) return NaN;
+            if (numbers.length === 1) return numbers[0];
+
+            let result = numbers[0];
+            for (let i = 0; i < operators.length; i++) {
+                const nextNum = numbers[i + 1];
+                switch (operators[i]) {
+                    case '+': result += nextNum; break;
+                    case '-': result -= nextNum; break;
+                    case '*': result *= nextNum; break;
+                    case '/': result /= nextNum; break;
+                    default: return NaN;
+                }
+            }
+
             return isFinite(result) ? result : NaN;
         } catch (error) {
             return NaN;
@@ -286,6 +317,7 @@ const EnhancedRealEstateCalculator = () => {
         localStorage.removeItem('realEstateCalcValues');
     };
 
+
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             {/* 알림 메시지 */}
@@ -307,6 +339,12 @@ const EnhancedRealEstateCalculator = () => {
                         </div>
                         <div className="flex gap-2">
                             <button
+                                onClick={() => setIsResultVisible(!isResultVisible)}
+                                className="p-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+                            >
+                                {isResultVisible ? '결과 접기' : '결과 보기'}
+                            </button>
+                            <button
                                 onClick={saveData}
                                 className="p-2 bg-green-500 text-white rounded-lg hover:bg-green-600"
                             >
@@ -323,239 +361,244 @@ const EnhancedRealEstateCalculator = () => {
                 </div>
 
                 {/* 결과 표시 영역 */}
-                <div className="max-w-md mx-auto px-4 py-2 bg-white border-t">
-                    {/* 자산 현황 그룹 */}
-                    <div className="mb-3">
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">자산 현황</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <span className="text-sm text-gray-600">현재 부동산</span>
-                                <div className="text-lg font-bold text-blue-600">
-                                    {formatNumber(Number(values.currentProperty))}만원
+                <div
+                    className={`max-w-md mx-auto bg-white border-t transform transition-all duration-300 ease-in-out ${isResultVisible ? 'translate-y-0 opacity-100' : '-translate-y-full opacity-0 h-0 overflow-hidden'
+                        }`}
+                >
+                    <div className="px-4 py-2">
+                        {/* 자산 현황 그룹 */}
+                        <div className="mb-3">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">자산 현황</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-gray-50 p-2 rounded-lg">
+                                    <span className="text-sm text-gray-600">현재 부동산</span>
+                                    <div className="text-lg font-bold text-blue-600">
+                                        {formatNumber(Number(values.currentProperty))}만원
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <span className="text-sm text-gray-600">보유 예금</span>
-                                <div className="text-lg font-bold text-blue-600">
-                                    {formatNumber(Number(values.savings))}만원
+                                <div className="bg-gray-50 p-2 rounded-lg">
+                                    <span className="text-sm text-gray-600">보유 예금</span>
+                                    <div className="text-lg font-bold text-blue-600">
+                                        {formatNumber(Number(values.savings))}만원
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* 필요 자금 그룹 */}
-                    <div className="mb-3">
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">필요 자금</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <span className="text-sm text-gray-600">
-                                    필요 계약금 ({100 - values.ltvRatio}%)
-                                </span>
-                                <div className="text-lg font-bold text-blue-600">
-                                    {formatNumber(results.requiredDownPayment)}만원
+                        {/* 필요 자금 그룹 */}
+                        <div className="mb-3">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">필요 자금</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-gray-50 p-2 rounded-lg">
+                                    <span className="text-sm text-gray-600">
+                                        필요 계약금 ({100 - values.ltvRatio}%)
+                                    </span>
+                                    <div className="text-lg font-bold text-blue-600">
+                                        {formatNumber(results.requiredDownPayment)}만원
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <span className="text-sm text-gray-600">총 필요자금</span>
-                                <div className="text-lg font-bold text-blue-600">
-                                    {formatNumber(results.totalRequired)}만원
+                                <div className="bg-gray-50 p-2 rounded-lg">
+                                    <span className="text-sm text-gray-600">총 필요자금</span>
+                                    <div className="text-lg font-bold text-blue-600">
+                                        {formatNumber(results.totalRequired)}만원
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* 추가 비용 그룹 */}
-                    <div className="mb-3">
-                        <h3 className="text-sm font-medium text-gray-500 mb-1">추가 비용</h3>
-                        <div className="grid grid-cols-2 gap-2">
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <span className="text-sm text-gray-600">중개수수료</span>
-                                <div className="text-xs text-gray-500">
-                                    적용요율: {(calculateBrokerageRate(values.newProperty, transactionType) * 100).toFixed(1)}%
+                        {/* 추가 비용 그룹 */}
+                        <div className="mb-3">
+                            <h3 className="text-sm font-medium text-gray-500 mb-1">추가 비용</h3>
+                            <div className="grid grid-cols-2 gap-2">
+                                <div className="bg-gray-50 p-2 rounded-lg">
+                                    <span className="text-sm text-gray-600">중개수수료</span>
+                                    <div className="text-xs text-gray-500">
+                                        적용요율: {(calculateBrokerageRate(values.newProperty, transactionType) * 100).toFixed(1)}%
+                                    </div>
+                                    <div className="text-lg font-bold text-red-600">
+                                        {formatNumber(Math.round(calculateBrokerageFee(values.newProperty, transactionType) / 10000))}만원
+                                    </div>
                                 </div>
-                                <div className="text-lg font-bold text-red-600">
-                                    {formatNumber(Math.round(calculateBrokerageFee(values.newProperty, transactionType) / 10000))}만원
-                                </div>
-                            </div>
-                            <div className="bg-gray-50 p-2 rounded-lg">
-                                <span className="text-sm text-gray-600">취득세</span>
-                                <div className="text-xs text-gray-500">
-                                    {getTaxFormula(values.newProperty, isFirstTime, region, transactionType)}
-                                </div>
-                                <div className="text-lg font-bold text-red-600">
-                                    {formatNumber(Math.round(calculateAcquisitionTax(values.newProperty, isFirstTime, region, transactionType) / 10000))}만원
+                                <div className="bg-gray-50 p-2 rounded-lg">
+                                    <span className="text-sm text-gray-600">취득세</span>
+                                    <div className="text-xs text-gray-500">
+                                        {getTaxFormula(values.newProperty, isFirstTime, region, transactionType)}
+                                    </div>
+                                    <div className="text-lg font-bold text-red-600">
+                                        {formatNumber(Math.round(calculateAcquisitionTax(values.newProperty, isFirstTime, region, transactionType) / 10000))}만원
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
 
-                    {/* 최종 필요자금 */}
-                    <div className="space-y-2">
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                            <span className="text-sm text-gray-600">필요자금부족분 (추가비용 제외)</span>
-                            <div className="text-2xl font-bold text-blue-600">
-                                {formatNumber(results.finalRequired)}만원
+                        {/* 최종 필요자금 */}
+                        <div className="space-y-2">
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                                <span className="text-sm text-gray-600">필요자금부족분 (추가비용 제외)</span>
+                                <div className="text-2xl font-bold text-blue-600">
+                                    {formatNumber(results.finalRequired)}만원
+                                </div>
                             </div>
-                        </div>
-                        <div className="bg-gray-50 p-3 rounded-lg">
-                            <span className="text-sm text-gray-600">최종 필요자금 (추가비용 포함)</span>
-                            <div className="text-3xl font-bold text-red-600">
-                                {formatNumber(Math.round(
-                                    results.finalRequired +
-                                    calculateBrokerageFee(values.newProperty, transactionType) / 10000 +
-                                    calculateAcquisitionTax(values.newProperty, isFirstTime, region, transactionType) / 10000
-                                ))}만원
+                            <div className="bg-gray-50 p-3 rounded-lg">
+                                <span className="text-sm text-gray-600">최종 필요자금 (추가비용 포함)</span>
+                                <div className="text-3xl font-bold text-red-600">
+                                    {formatNumber(Math.round(
+                                        results.finalRequired +
+                                        calculateBrokerageFee(values.newProperty, transactionType) / 10000 +
+                                        calculateAcquisitionTax(values.newProperty, isFirstTime, region, transactionType) / 10000
+                                    ))}만원
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
 
-            {/* 입력 영역 (스크롤 가능) */}
-            <div className="flex-1 overflow-auto">
-                <div className="max-w-md mx-auto p-4">
-                    <div className="space-y-4">
-                        {/* 기본 입력 필드들 */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm space-y-4">
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    현재 부동산 금액 <span className="text-gray-500">(단위: 만원)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="text"
-                                    value={displayValues.currentProperty}
-                                    onChange={(e) => handleInputChange('currentProperty', e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'currentProperty')}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
-                                    placeholder="금액 입력 (사칙연산 가능)"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    현재 은행 대출금 <span className="text-gray-500">(단위: 만원)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="text"
-                                    value={displayValues.bankLoan}
-                                    onChange={(e) => handleInputChange('bankLoan', e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'bankLoan')}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
-                                    placeholder="금액 입력 (사칙연산 가능)"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    보유 예금자산 <span className="text-gray-500">(단위: 만원)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="text"
-                                    value={displayValues.savings}
-                                    onChange={(e) => handleInputChange('savings', e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'savings')}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
-                                    placeholder="금액 입력 (사칙연산 가능)"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    이사갈 부동산 금액 <span className="text-gray-500">(단위: 만원)</span>
-                                </label>
-                                <input
-                                    type="text"
-                                    inputMode="text"
-                                    value={displayValues.newProperty}
-                                    onChange={(e) => handleInputChange('newProperty', e.target.value)}
-                                    onKeyDown={(e) => handleKeyDown(e, 'newProperty')}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
-                                    placeholder="금액 입력 (사칙연산 가능)"
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    LTV 비율 (%)
-                                </label>
-                                <input
-                                    type="number"
-                                    inputMode="decimal"
-                                    value={values.ltvRatio}
-                                    onChange={(e) => setValues(prev => ({
-                                        ...prev,
-                                        ltvRatio: Number(e.target.value)
-                                    }))}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
-                                    placeholder="LTV 비율 입력"
-                                    min="0"
-                                    max="100"
-                                />
-                            </div>
-                        </div>
-
-                        {/* 추가 비용 계산 섹션 */}
-                        <div className="bg-white p-4 rounded-lg shadow-sm space-y-4">
-                            <h2 className="text-lg font-bold">추가 비용 설정</h2>
-
-                            {/* 거래 유형 선택 */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    거래 유형
-                                </label>
-                                <div className="flex gap-4">
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            value="sale"
-                                            checked={transactionType === 'sale'}
-                                            onChange={(e) => setTransactionType(e.target.value)}
-                                            className="mr-2"
-                                        />
-                                        매매
+                {/* 입력 영역 (스크롤 가능) */}
+                <div className="flex-1 overflow-auto">
+                    <div className="max-w-md mx-auto p-4">
+                        <div className="space-y-4">
+                            {/* 기본 입력 필드들 */}
+                            <div className="bg-white p-4 rounded-lg shadow-sm space-y-4">
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        현재 부동산 금액 <span className="text-gray-500">(단위: 만원)</span>
                                     </label>
-                                    <label className="flex items-center">
-                                        <input
-                                            type="radio"
-                                            value="rent"
-                                            checked={transactionType === 'rent'}
-                                            onChange={(e) => setTransactionType(e.target.value)}
-                                            className="mr-2"
-                                        />
-                                        전세
+                                    <input
+                                        type="text"
+                                        inputMode="text"
+                                        value={displayValues.currentProperty}
+                                        onChange={(e) => handleInputChange('currentProperty', e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'currentProperty')}
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                                        placeholder="금액 입력 (사칙연산 가능)"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        현재 은행 대출금 <span className="text-gray-500">(단위: 만원)</span>
                                     </label>
+                                    <input
+                                        type="text"
+                                        inputMode="text"
+                                        value={displayValues.bankLoan}
+                                        onChange={(e) => handleInputChange('bankLoan', e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'bankLoan')}
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                                        placeholder="금액 입력 (사칙연산 가능)"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        보유 예금자산 <span className="text-gray-500">(단위: 만원)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        inputMode="text"
+                                        value={displayValues.savings}
+                                        onChange={(e) => handleInputChange('savings', e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'savings')}
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                                        placeholder="금액 입력 (사칙연산 가능)"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        이사갈 부동산 금액 <span className="text-gray-500">(단위: 만원)</span>
+                                    </label>
+                                    <input
+                                        type="text"
+                                        inputMode="text"
+                                        value={displayValues.newProperty}
+                                        onChange={(e) => handleInputChange('newProperty', e.target.value)}
+                                        onKeyDown={(e) => handleKeyDown(e, 'newProperty')}
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                                        placeholder="금액 입력 (사칙연산 가능)"
+                                    />
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        LTV 비율 (%)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        inputMode="decimal"
+                                        value={values.ltvRatio}
+                                        onChange={(e) => setValues(prev => ({
+                                            ...prev,
+                                            ltvRatio: Number(e.target.value)
+                                        }))}
+                                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 text-lg"
+                                        placeholder="LTV 비율 입력"
+                                        min="0"
+                                        max="100"
+                                    />
                                 </div>
                             </div>
 
-                            {/* 지역 구분 */}
-                            <div className="space-y-2">
-                                <label className="block text-sm font-medium text-gray-700">
-                                    지역 구분
-                                </label>
-                                <select
-                                    value={region}
-                                    onChange={(e) => setRegion(e.target.value)}
-                                    className="w-full p-2 border rounded"
-                                >
-                                    <option value="normal">일반지역</option>
-                                    <option value="speculative">투기과열지구</option>
-                                </select>
-                            </div>
+                            {/* 추가 비용 계산 섹션 */}
+                            <div className="bg-white p-4 rounded-lg shadow-sm space-y-4">
+                                <h2 className="text-lg font-bold">추가 비용 설정</h2>
 
-                            {/* 생애최초 구입 여부 */}
-                            <div className="space-y-2">
-                                <label className="flex items-center">
-                                    <input
-                                        type="checkbox"
-                                        checked={isFirstTime}
-                                        onChange={(e) => setIsFirstTime(e.target.checked)}
-                                        className="mr-2"
-                                    />
-                                    생애최초 구입
-                                </label>
+                                {/* 거래 유형 선택 */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        거래 유형
+                                    </label>
+                                    <div className="flex gap-4">
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                value="sale"
+                                                checked={transactionType === 'sale'}
+                                                onChange={(e) => setTransactionType(e.target.value)}
+                                                className="mr-2"
+                                            />
+                                            매매
+                                        </label>
+                                        <label className="flex items-center">
+                                            <input
+                                                type="radio"
+                                                value="rent"
+                                                checked={transactionType === 'rent'}
+                                                onChange={(e) => setTransactionType(e.target.value)}
+                                                className="mr-2"
+                                            />
+                                            전세
+                                        </label>
+                                    </div>
+                                </div>
+
+                                {/* 지역 구분 */}
+                                <div className="space-y-2">
+                                    <label className="block text-sm font-medium text-gray-700">
+                                        지역 구분
+                                    </label>
+                                    <select
+                                        value={region}
+                                        onChange={(e) => setRegion(e.target.value)}
+                                        className="w-full p-2 border rounded"
+                                    >
+                                        <option value="normal">일반지역</option>
+                                        <option value="speculative">투기과열지구</option>
+                                    </select>
+                                </div>
+
+                                {/* 생애최초 구입 여부 */}
+                                <div className="space-y-2">
+                                    <label className="flex items-center">
+                                        <input
+                                            type="checkbox"
+                                            checked={isFirstTime}
+                                            onChange={(e) => setIsFirstTime(e.target.checked)}
+                                            className="mr-2"
+                                        />
+                                        생애최초 구입
+                                    </label>
+                                </div>
                             </div>
                         </div>
                     </div>
