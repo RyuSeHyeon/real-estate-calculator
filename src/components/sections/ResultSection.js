@@ -60,23 +60,36 @@ const ResultSection = ({
                 {/* 추가 비용 그룹 */}
                 <div>
                     <h3 className="text-sm font-medium text-gray-500 mb-2">추가 비용</h3>
-                    <div className="bg-gray-50 p-2 rounded-lg">
-                        <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-2">
+                    <div className="grid grid-cols-2 gap-2">
+                        <div className="bg-gray-50 p-2 rounded-lg">
+                            <div className="flex justify-between items-center">
                                 <span className="text-xs text-gray-600">중개수수료</span>
-                                <span className="text-xs text-gray-500">
-                                    (적용요율: {(calculateBrokerageRate(values.newProperty, transactionType) * 100).toFixed(1)}%)
-                                </span>
+                                <button
+                                    onClick={() => setShowBrokerageTable(true)}
+                                    className="text-xs text-blue-600 hover:text-blue-800 underline"
+                                >
+                                    중개수수료 요율표
+                                </button>
                             </div>
-                            <button
-                                onClick={() => setShowBrokerageTable(true)}
-                                className="text-xs text-blue-600 hover:text-blue-800 underline"
-                            >
-                                [중개수수료요율표 확인]
-                            </button>
+                            <div className="text-xs text-gray-500 mt-1">
+                                적용요율: {(calculateBrokerageRate(values.newProperty, transactionType) * 100).toFixed(1)}%
+                            </div>
+                            <div className="text-base font-bold text-red-600 mt-1">
+                                {formatNumber(Math.round(brokerageFee / 10000))}만원
+                            </div>
                         </div>
-                        <div className="text-base font-bold text-red-600">
-                            {formatNumber(Math.round(brokerageFee / 10000))}만원
+
+                        {/* 취득세계산기 링크 */}
+                        <div className="bg-gray-50 p-2 rounded-lg flex flex-col justify-center items-center">
+                            <span className="text-xs text-gray-600 mb-1">취득세 계산이 필요하신가요?</span>
+                            <a
+                                href="https://xn--989a00af8jnslv3dba.com/%EC%B7%A8%EB%93%9D%EC%84%B8"
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="inline-flex items-center justify-center px-4 py-2 bg-blue-500 text-white text-sm font-medium rounded-lg hover:bg-blue-600 transition-colors"
+                            >
+                                취득세계산기 바로가기
+                            </a>
                         </div>
                     </div>
                 </div>
